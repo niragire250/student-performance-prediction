@@ -1,0 +1,26 @@
+[
+  {
+    "model":"GradientBoosting",
+    "cv_accuracy_mean":0.9272321429,
+    "cv_accuracy_std":0.0160974339,
+    "cv_f1_mean":0.9457947149,
+    "cv_precision_mean":0.9439011376,
+    "cv_recall_mean":0.9480620155
+  },
+  {
+    "model":"RandomForest",
+    "cv_accuracy_mean":0.9272321429,
+    "cv_accuracy_std":0.0214636783,
+    "cv_f1_mean":0.944715175,
+    "cv_precision_mean":0.961751135,
+    "cv_recall_mean":0.9290143965
+  },
+  {
+    "model":"LogisticRegression",
+    "cv_accuracy_mean":0.9176587302,
+    "cv_accuracy_std":0.0187182165,
+    "cv_f1_mean":0.9385458363,
+    "cv_precision_mean":0.9395211815,
+    "cv_recall_mean":0.938538206
+  }
+]

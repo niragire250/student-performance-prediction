@@ -1,0 +1,106 @@
+{
+  "target": "pass_fail",
+  "pass_threshold_on_G3": 10,
+  "numeric_features": [
+    "age",
+    "Medu",
+    "Fedu",
+    "traveltime",
+    "studytime",
+    "failures",
+    "famrel",
+    "freetime",
+    "goout",
+    "Dalc",
+    "Walc",
+    "health",
+    "absences",
+    "G1",
+    "G2",
+    "average_prior_grade",
+    "grade_trend",
+    "total_study_support",
+    "parental_education",
+    "social_alcohol_index"
+  ],
+  "categorical_features": [
+    "school",
+    "sex",
+    "address",
+    "famsize",
+    "Pstatus",
+    "Mjob",
+    "Fjob",
+    "reason",
+    "guardian",
+    "schoolsup",
+    "famsup",
+    "paid",
+    "activities",
+    "nursery",
+    "higher",
+    "internet",
+    "romantic",
+    "attendance_risk"
+  ],
+  "best_model_family": "GradientBoosting",
+  "best_params": {
+    "clf__learning_rate": 0.1,
+    "clf__max_depth": 2,
+    "clf__n_estimators": 100
+  },
+  "random_state": 42,
+  "n_train": 316,
+  "n_test": 79,
+  "baseline_metrics": {
+    "accuracy": 0.8860759493670886,
+    "precision": 0.94,
+    "recall": 0.8867924528301887,
+    "f1_score": 0.912621359223301,
+    "classification_report": "              precision    recall  f1-score   support\n\n        FAIL       0.79      0.88      0.84        26\n        PASS       0.94      0.89      0.91        53\n\n    accuracy                           0.89        79\n   macro avg       0.87      0.89      0.87        79\nweighted avg       0.89      0.89      0.89        79\n",
+    "roc_auc": 0.9375907111756169
+  },
+  "final_metrics": {
+    "accuracy": 0.8987341772151899,
+    "precision": 0.9591836734693877,
+    "recall": 0.8867924528301887,
+    "f1_score": 0.9215686274509803,
+    "classification_report": "              precision    recall  f1-score   support\n\n        FAIL       0.80      0.92      0.86        26\n        PASS       0.96      0.89      0.92        53\n\n    accuracy                           0.90        79\n   macro avg       0.88      0.90      0.89        79\nweighted avg       0.91      0.90      0.90        79\n",
+    "roc_auc": 0.9426705370101597
+  },
+  "confusion_matrix": [
+    [
+      24,
+      2
+    ],
+    [
+      6,
+      47
+    ]
+  ],
+  "early_warning_metrics": {
+    "accuracy": 0.6708860759493671,
+    "precision": 0.6956521739130435,
+    "recall": 0.9056603773584906,
+    "f1_score": 0.7868852459016393,
+    "classification_report": "              precision    recall  f1-score   support\n\n        FAIL       0.50      0.19      0.28        26\n        PASS       0.70      0.91      0.79        53\n\n    accuracy                           0.67        79\n   macro avg       0.60      0.55      0.53        79\nweighted avg       0.63      0.67      0.62        79\n",
+    "roc_auc": 0.6480406386066764
+  },
+  "top_feature_importances": {
+    "failures": 0.0018724659097089892,
+    "famsize_LE3": 0.002281294817718001,
+    "goout": 0.0024401390953192976,
+    "schoolsup_yes": 0.0024459233852499756,
+    "parental_education": 0.00269708889373604,
+    "famsize_GT3": 0.002749628378974132,
+    "famrel": 0.0036377553219254294,
+    "age": 0.0037412317566386096,
+    "Fjob_at_home": 0.004692674054574831,
+    "absences": 0.00984600974764134,
+    "G1": 0.010104060194894971,
+    "traveltime": 0.019135915271850924,
+    "Fjob_other": 0.021779653325472447,
+    "average_prior_grade": 0.08390255034833985,
+    "G2": 0.8153180416327636
+  }
+}
