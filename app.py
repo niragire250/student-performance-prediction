@@ -33,7 +33,96 @@ st.set_page_config(
     page_title="Student Performance Prediction System",
     page_icon="🎓",
     layout="wide",
+    initial_sidebar_state="auto",
 )
+
+
+def inject_responsive_css():
+    """
+    Makes the app usable on phones and tablets, not just wide desktop
+    screens. Streamlit's own column/radio layout is desktop-first by
+    default (columns keep shrinking side-by-side instead of stacking, and
+    horizontal radio groups can overflow), so this CSS adds explicit
+    breakpoints:
+
+      - > 768px (desktop/laptop): Streamlit's normal multi-column layout.
+      - 481-768px (tablet / large phone): columns wrap to 2 per row.
+      - <= 480px (phone): every column stacks to a single full-width column.
+
+    Applied once, globally, so every page (Home, Predict, Dashboard,
+    Responsible Use) benefits without page-specific changes.
+    """
+    st.markdown(
+        """
+        <style>
+        /* Prevent mobile browsers from auto-zooming text and keep the
+           page from ever scrolling sideways. */
+        html, body { -webkit-text-size-adjust: 100%; }
+        .main .block-container { overflow-x: hidden; }
+
+        /* Fluid, readable headings instead of one fixed desktop size. */
+        h1, [data-testid="stMarkdownContainer"] h1 { font-size: clamp(1.4rem, 4vw + 0.5rem, 2.25rem) !important; }
+        h2, [data-testid="stMarkdownContainer"] h2 { font-size: clamp(1.15rem, 3vw + 0.4rem, 1.6rem) !important; }
+        h3, [data-testid="stMarkdownContainer"] h3 { font-size: clamp(1.0rem, 2.2vw + 0.4rem, 1.3rem) !important; }
+
+        /* Any row of st.columns() must wrap instead of squeezing forever. */
+        div[data-testid="stHorizontalBlock"] {
+            flex-wrap: wrap !important;
+            row-gap: 0.9rem;
+        }
+
+        /* Code / JSON blocks scroll horizontally instead of overflowing. */
+        pre, code { overflow-x: auto !important; }
+
+        /* Tablet & large phone: 2 columns per row, whatever N was. */
+        @media (max-width: 768px) {
+            .main .block-container {
+                padding-left: 1.1rem !important;
+                padding-right: 1.1rem !important;
+                padding-top: 1.2rem !important;
+            }
+            div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
+                min-width: 46% !important;
+                flex: 1 1 46% !important;
+            }
+            /* Horizontal radio groups wrap onto multiple lines instead of
+               overflowing or forcing a sideways scroll. */
+            div[role="radiogroup"] {
+                flex-wrap: wrap !important;
+                row-gap: 0.4rem !important;
+            }
+        }
+
+        /* Phone: every column becomes full-width and stacks vertically. */
+        @media (max-width: 480px) {
+            .main .block-container {
+                padding-left: 0.8rem !important;
+                padding-right: 0.8rem !important;
+            }
+            div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
+                min-width: 100% !important;
+                flex: 1 1 100% !important;
+            }
+            /* Metric values are large by default; shrink them so a 3-4
+               metric row stays legible once stacked full-width. */
+            div[data-testid="stMetricValue"] { font-size: 1.4rem !important; }
+            div[data-testid="stMetricLabel"] { font-size: 0.8rem !important; }
+            button[kind] { width: 100% !important; }
+        }
+
+        /* Dataframes/tables: scroll horizontally within their own box
+           rather than forcing the whole page to scroll sideways. */
+        div[data-testid="stDataFrame"], div[data-testid="stTable"] {
+            overflow-x: auto !important;
+            max-width: 100% !important;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+inject_responsive_css()
 
 
 # --------------------------------------------------------------------------
@@ -376,7 +465,10 @@ elif page == "📊 Model Dashboard":
     cm = np.array(meta["confusion_matrix"])
     cm_df = pd.DataFrame(cm, index=["Actual: FAIL", "Actual: PASS"],
                           columns=["Predicted: FAIL", "Predicted: PASS"])
-    st.table(cm_df)
+    # st.dataframe (not st.table) scrolls/resizes within its own box on a
+    # narrow screen instead of a fixed-width table forcing the page to
+    # scroll sideways.
+    st.dataframe(cm_df, use_container_width=True)
 
     st.subheader("Baseline vs. Tuned Model")
     bm = meta["baseline_metrics"]
