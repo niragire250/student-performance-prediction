@@ -48,6 +48,90 @@ PASS_THRESHOLD = 10            # G3 >= PASS_THRESHOLD -> PASS (1), else FAIL (0)
 FAIRNESS_AUDIT_COLUMNS = ["sex", "address", "school"]
 
 # --------------------------------------------------------------------------
+# RP Institution Configuration (Single Source of Truth)
+# --------------------------------------------------------------------------
+# Official Rwanda Polytechnic colleges and campuses
+RP_INSTITUTIONS = [
+    {
+        "id": "RP-GISHARI",
+        "name": "Rwanda Polytechnic - Gishari College",
+        "college": "Gishari",
+        "campuses": []
+    },
+    {
+        "id": "RP-HUYE",
+        "name": "Rwanda Polytechnic - Huye College",
+        "college": "Huye",
+        "campuses": []
+    },
+    {
+        "id": "RP-KARONGI",
+        "name": "Rwanda Polytechnic - Karongi College",
+        "college": "Karongi",
+        "campuses": []
+    },
+    {
+        "id": "RP-KIGALI",
+        "name": "Rwanda Polytechnic - Kigali College",
+        "college": "Kigali",
+        "campuses": ["Rutongo"]
+    },
+    {
+        "id": "RP-KITABI",
+        "name": "Rwanda Polytechnic - Kitabi College",
+        "college": "Kitabi",
+        "campuses": ["Rusizi"]
+    },
+    {
+        "id": "RP-MUSANZE",
+        "name": "Rwanda Polytechnic - Musanze College",
+        "college": "Musanze",
+        "campuses": []
+    },
+    {
+        "id": "RP-NGOMA",
+        "name": "Rwanda Polytechnic - Ngoma College",
+        "college": "Ngoma",
+        "campuses": []
+    },
+    {
+        "id": "RP-TUMBA",
+        "name": "Rwanda Polytechnic - Tumba College",
+        "college": "Tumba",
+        "campuses": []
+    }
+]
+
+# --------------------------------------------------------------------------
+# Model Configuration
+# --------------------------------------------------------------------------
+# Legacy model: Portuguese secondary school data (GP/MS)
+# RP model: Not yet trained - architecture ready, awaiting RP training data
+LEGACY_MODEL_PATH = MODEL_PATH
+RP_MODEL_PATH = ROOT / "models" / "rp_student_success_model.pkl"
+
+# Model availability status
+RP_MODEL_AVAILABLE = RP_MODEL_PATH.exists()
+
+# --------------------------------------------------------------------------
+# Legacy Model Compatibility Layer
+# --------------------------------------------------------------------------
+# The legacy model was trained on Portuguese school data (GP/MS).
+# This mapping is ONLY for legacy model compatibility during prototype phase.
+# In production with RP-specific data, use the RP-trained model.
+# DO NOT present legacy model predictions as RP-specific predictions.
+LEGACY_MODEL_COMPATIBILITY = {
+    "RP-GISHARI": "GP",
+    "RP-HUYE": "GP",
+    "RP-KARONGI": "GP",
+    "RP-KIGALI": "GP",
+    "RP-KITABI": "GP",
+    "RP-MUSANZE": "GP",
+    "RP-NGOMA": "GP",
+    "RP-TUMBA": "GP"
+}
+
+# --------------------------------------------------------------------------
 # Feature lists
 # --------------------------------------------------------------------------
 BINARY_YESNO_COLS = [

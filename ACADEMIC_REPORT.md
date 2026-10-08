@@ -211,14 +211,24 @@ actually reproducible by re-running the saved model, not just numbers
 pasted into a report.
 
 ### 4.2 Streamlit Application
-Four pages: **Home** (overview, purpose, disclaimer), **Predict
-Performance** (data-entry form → prediction + confidence), **Model
-Dashboard** (dataset stats, metrics, confusion matrix, feature importance,
-early-warning comparison), and **Responsible Use** (risk/mitigation
-table). *(See DEMO_GUIDE.md for a screenshot-by-screenshot walkthrough to
-perform during your live demonstration — this document does not embed
-screenshots, since they must be captured from your own running
-application.)*
+
+The application has been evolved into the **RP Student Success & Early Warning System** prototype with 11 pages:
+
+- **Home** (overview, purpose, disclaimer)
+- **Student Portal** (Registration Number lookup with session state management)
+- **Dashboard** (KPIs and visualizations)
+- **Predict Performance** (data-entry form → prediction + confidence, with RP Institution/College selector)
+- **Early Warning** (risk identification)
+- **Student Profile** (individual student analysis)
+- **What-If Analysis** (scenario exploration)
+- **Batch Prediction** (CSV upload for multiple students)
+- **Model Dashboard** (dataset stats, metrics, confusion matrix, feature importance, early-warning comparison)
+- **Fairness Audit** (subgroup performance analysis)
+- **Responsible Use** (risk/mitigation table, includes legacy model context)
+
+**Important RP Prototype Context**: The application uses a **legacy model** trained on Portuguese secondary-school data (2008). RP institution data is mapped for prototype compatibility via `LEGACY_MODEL_COMPATIBILITY` configuration. Production deployment for Rwanda Polytechnic requires validation and/or retraining using representative RP student data. The application architecture is RP-ready, but an RP-trained model does not yet exist.
+
+*(See DEMO_GUIDE.md for a screenshot-by-screenshot walkthrough to perform during your live demonstration — this document does not embed screenshots, since they must be captured from your own running application.)*
 
 ### 4.3 Model Results
 *(Full numbers, with interpretation, are documented in README.md §12 —

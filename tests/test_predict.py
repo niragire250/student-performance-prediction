@@ -106,3 +106,110 @@ def test_category_values_cover_training_data():
     assert "school" in cats
     assert set(cats["school"]) <= {"GP", "MS"}
     assert "sex" in cats and set(cats["sex"]) <= {"F", "M"}
+
+
+def test_risk_level_calculation():
+    """Test that risk levels are calculated correctly based on probability."""
+    from predict import calculate_risk_level
+    
+    # High probability pass should be low risk
+    assert calculate_risk_level(0.85, "PASS") == "Low"
+    assert calculate_risk_level(0.75, "PASS") == "Low"
+    
+    # Medium probability should be medium risk
+    assert calculate_risk_level(0.55, "PASS") == "Medium"
+    assert calculate_risk_level(0.45, "PASS") == "Medium"
+    
+    # Low probability pass should be high risk
+    assert calculate_risk_level(0.25, "PASS") == "High"
+    assert calculate_risk_level(0.15, "PASS") == "High"
+    
+    # For FAIL predictions, low probability pass is high risk
+    assert calculate_risk_level(0.20, "FAIL") == "High"
+    assert calculate_risk_level(0.50, "FAIL") == "Medium"
+    assert calculate_risk_level(0.80, "FAIL") == "Low"
+
+
+def test_batch_prediction_multiple_students(base_student):
+    """Test batch prediction with multiple valid student records."""
+    from predict import predict_batch
+    
+    students = [
+        dict(base_student, G1=18, G2=19, failures=0),
+        dict(base_student, G1=5, G2=6, failures=2),
+        dict(base_student, G1=12, G2=13, failures=0),
+    ]
+    
+    results = predict_batch(students)
+    
+    assert len(results) == 3
+    for result in results:
+        assert result["prediction"] in ("PASS", "FAIL")
+        assert "risk_level" in result
+        assert result["risk_level"] in ("Low", "Medium", "High")
+
+
+def test_batch_prediction_with_missing_field(base_student):
+    """Test batch prediction handles missing fields gracefully."""
+    from predict import predict_batch
+    
+    students = [
+        dict(base_student, G1=18, G2=19, failures=0),
+        dict(base_student, G1=5, G2=6, failures=2),  # Valid
+    ]
+    
+    # Remove a required field from the second student
+    del students[1]["age"]
+    
+    results = predict_batch(students)
+    
+    assert len(results) == 2
+    assert results[0]["prediction"] in ("PASS", "FAIL")
+    assert results[1]["prediction"] == "ERROR"
+    assert "error" in results[1]
+
+
+def test_feature_importance_returns_dict():
+    """Test that get_feature_importance returns a dictionary."""
+    from predict import get_feature_importance
+    
+    fi = get_feature_importance()
+    assert isinstance(fi, dict)
+    assert len(fi) > 0
+
+
+def test_intervention_recommendations(base_student):
+    """Test that intervention recommendations are generated."""
+    from predict import get_intervention_recommendations
+    
+    prediction_result = {
+        "prediction": "FAIL",
+        "risk_level": "High",
+        "probability_pass": 25.0,
+        "probability_fail": 75.0,
+    }
+    
+    recommendations = get_intervention_recommendations(base_student, prediction_result)
+    
+    assert isinstance(recommendations, list)
+    assert len(recommendations) > 0
+    assert all(isinstance(rec, str) for rec in recommendations)
+
+
+def test_app_imports_required_raw_fields():
+    """Regression test: app.py must import REQUIRED_RAW_FIELDS from config."""
+    import sys
+    from pathlib import Path
+    
+    # Read app.py and check for the import
+    app_path = Path(__file__).resolve().parents[1] / "app.py"
+    with open(app_path, encoding='utf-8') as f:
+        app_content = f.read()
+    
+    # Check that REQUIRED_RAW_FIELDS is imported from config
+    assert "from config import" in app_content, "app.py must import from config"
+    assert "REQUIRED_RAW_FIELDS" in app_content, "app.py must import REQUIRED_RAW_FIELDS"
+    
+    # Verify the import statement includes both MODEL_PATH and REQUIRED_RAW_FIELDS
+    assert "MODEL_PATH, REQUIRED_RAW_FIELDS" in app_content or "REQUIRED_RAW_FIELDS, MODEL_PATH" in app_content, \
+        "app.py should import both MODEL_PATH and REQUIRED_RAW_FIELDS from config"

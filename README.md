@@ -1,20 +1,41 @@
-# 🎓 Student Performance Prediction System Using Machine Learning
+# 🎓 RP Student Success & Early Warning System
 
-A complete, reproducible machine-learning system that predicts whether a
-secondary-school student will **PASS** or **FAIL**, built for the CAT2
-Practical Assessment (Module: *Python and Fundamentals of AI*, ITLPA701,
-Rwanda Polytechnic — Ngoma College).
+A machine-learning decision-support tool for academic early warning at Rwanda Polytechnic, built with scikit-learn and Streamlit.
+
+**Evolution**: This is an evolution of the original Student Performance Prediction System, enhanced with RP-specific features including student portal, database integration, and early warning capabilities.
 
 ---
 
 ## 1. Project Overview
 
-This project applies supervised machine learning to a real academic
-early-warning problem: identifying, ahead of time, which students are at
-risk of failing so that teachers and support staff can intervene. It covers
-the full ML lifecycle — data acquisition, cleaning, EDA, feature
-engineering, model selection, training, hyperparameter tuning, evaluation,
-and deployment through an interactive Streamlit web application.
+This project applies supervised machine learning to an academic early-warning problem: identifying, ahead of time, which students are at risk of failing so that teachers and support staff can intervene. It covers the full ML lifecycle — data acquisition, cleaning, EDA, feature engineering, model selection, training, hyperparameter tuning, evaluation, and deployment through an interactive Streamlit web application.
+
+### RP-Specific Features
+
+- **Student Portal**: Predict performance using Registration Number lookup
+- **Official RP Institutions**: 8 Rwanda Polytechnic colleges (Gishari, Huye, Karongi, Kigali, Kitabi, Musanze, Ngoma, Tumba)
+- **Database Integration**: SQLite demo database with student records
+- **Session State Management**: Persistent student selection across navigation
+- **Higher-Education Context**: Terminology adapted for RP academic environment
+
+### Model Context
+
+**IMPORTANT**: The current prototype uses a **legacy model** trained on Portuguese secondary-school data (UCI Student Performance dataset, 2008). RP institution data is mapped for prototype compatibility via a dedicated compatibility layer. 
+
+**Production deployment for Rwanda Polytechnic requires**:
+- Validation and/or retraining using representative RP student data
+- RP-specific feature engineering
+- Cultural and educational context alignment
+
+The application architecture is RP-ready, but prediction quality for real RP students has not been validated with an RP-trained model.
+
+### Architecture Highlights
+
+- **Database Layer**: SQLite demo database with replaceable architecture for production RP database
+- **Institution Management**: Support for 8 official RP colleges with campus structure
+- **Service Layer**: Clean separation between UI, business logic, and data access
+- **Feature Mapping Layer**: Centralized schema and mapper for RP-to-model feature translation
+- **Demo Data**: Synthetic RP student records for testing (clearly marked as DEMO/SYNTHETIC)
 
 ## 2. Problem Statement
 
@@ -78,11 +99,11 @@ The final model uses **20 numeric** and **18 categorical** input features —
 
 Python 3, pandas, NumPy, scikit-learn (Pipeline, ColumnTransformer,
 SimpleImputer, StandardScaler, OneHotEncoder, GridSearchCV), matplotlib,
-seaborn, Streamlit, joblib.
+seaborn, Streamlit, joblib, plotly, SQLite (demo database).
 
 ## 7. Project Architecture
 
-**Training pipeline:**
+### Training Pipeline
 
 ```
 Raw CSV (UCI dataset)
@@ -108,7 +129,43 @@ Model Selection & Saving (joblib: model.pkl + metadata.json)
 Streamlit Deployment
 ```
 
-**Prediction (inference) pipeline:**
+### Prediction Architecture (RP System)
+
+```
+Streamlit UI
+    ↓
+Student Portal (Registration Number Lookup OR Manual Input)
+    ↓
+Student Service (Business Logic)
+    ↓
+Student Repository (Data Access)
+    ↓
+SQLite Demo Database (Replaceable with RP API/Database)
+    ↓
+Feature Mapping (Database → ML Features)
+    ↓
+Feature Engineering (Same as training)
+    ↓
+Trained Model (GradientBoosting)
+    ↓
+Prediction + Risk Level + Recommendations
+```
+
+### Database Schema
+
+**institutions**: RP campus information
+- institution_id, institution_name, campus, active
+
+**students**: Student records
+- registration_number, institution_id, full_name, programme, department, academic_year, year_of_study, semester
+
+**student_academic_records**: Academic data (maps to ML features)
+- All REQUIRED_RAW_FIELDS (32 fields) from the model
+
+**interventions**: Intervention tracking
+- student_id, risk_level, risk_reason, intervention, assigned_lecturer, status, follow_up_date, notes
+
+### Prediction (inference) pipeline:
 
 ```
 User Input (Streamlit form)
@@ -140,8 +197,9 @@ student-performance-prediction/
 ├── data/
 │   ├── raw/
 │   │   └── student-mat.csv          # original UCI dataset (unmodified)
-│   └── processed/
-│       └── student-mat-processed.csv
+│   ├── processed/
+│   │   └── student-mat-processed.csv
+│   └── rp_demo.db                   # SQLite demo database (100 synthetic students)
 │
 ├── models/
 │   ├── model.pkl                    # trained pipeline (preprocessing + classifier)
@@ -163,14 +221,23 @@ student-performance-prediction/
 │   ├── train_model.py               # full training pipeline
 │   ├── evaluate_model.py            # standalone evaluation / verification
 │   ├── fairness_audit.py            # subgroup (sex/address/school) performance audit
-│   └── predict.py                   # single-record inference used by app.py
+│   ├── predict.py                   # single-record & batch inference used by app.py
+│   ├── data/                        # NEW: Database abstraction layer
+│   │   ├── __init__.py
+│   │   ├── database.py              # SQLite database schema and connection
+│   │   ├── repositories.py          # Data access layer (Student, Institution, Intervention)
+│   │   └── seed.py                 # Demo data seeding script
+│   └── services/                    # NEW: Business logic layer
+│       ├── __init__.py
+│       └── student_service.py       # Student lookup and validation logic
 │
 ├── tests/
 │   ├── conftest.py                  # shared pytest fixtures
-│   ├── test_predict.py              # prediction-pipeline tests (valid/boundary/error cases)
-│   └── test_pipeline.py             # data-integrity & reproducibility tests
+│   ├── test_predict.py              # prediction-pipeline tests (17 tests)
+│   ├── test_pipeline.py             # data-integrity & reproducibility tests (11 tests)
+│   └── test_database.py             # NEW: database and repository tests (5 tests)
 │
-├── app.py                           # Streamlit web application
+├── app.py                           # Streamlit web application (10 pages)
 ├── requirements.txt
 ├── requirements-dev.txt             # adds pytest, for running tests/
 ├── README.md
@@ -228,6 +295,90 @@ cd src
 python eda.py
 ```
 
+## 11. How to Initialize Demo Database
+
+```bash
+# Initialize database and seed demo data
+python -c "import sys; sys.path.insert(0, 'src'); from data.seed import seed_all; seed_all()"
+```
+
+This creates `data/rp_demo.db` with:
+- 4 RP institutions (Kigali, Ngoma, Rulindo, Kibuye campuses)
+- 100 synthetic student records with academic data
+- 30 intervention records
+
+**IMPORTANT**: This is DEMO DATA - not real RP student records.
+
+## 12. How to Run the Application
+
+```bash
+streamlit run app.py
+```
+
+The application will open in your browser at `http://localhost:8501`.
+
+### Available Pages
+
+1. **Home** - Project overview and disclaimer
+2. **Student Portal** - NEW: Predict using Registration Number or Manual Input
+3. **Dashboard** - KPIs and visualizations
+4. **Predict Performance** - Manual prediction form
+5. **Early Warning** - Risk identification
+6. **Student Profile** - Individual student analysis
+7. **What-If Analysis** - Scenario exploration
+8. **Batch Prediction** - CSV upload for multiple students
+9. **Model Dashboard** - Model metrics and feature importance
+10. **Fairness Audit** - Subgroup performance analysis
+11. **Responsible Use** - Limitations and ethical considerations
+
+## 13. How to Run Tests
+
+```bash
+# Run all tests
+pytest tests/ -v
+
+# Run specific test file
+pytest tests/test_predict.py -v
+pytest tests/test_database.py -v
+```
+
+Test coverage: 33 tests (11 pipeline + 17 prediction + 5 database)
+
+## 14. RP Production Integration Plan
+
+The current system uses a SQLite demo database. To integrate with official RP systems:
+
+### Option 1: Replace with PostgreSQL
+
+1. Update `src/data/database.py` to use `psycopg2` instead of `sqlite3`
+2. Update connection string to RP PostgreSQL instance
+3. Ensure schema matches RP student information system
+4. Update field mappings in `StudentService.map_to_ml_features()`
+
+### Option 2: RP API Integration
+
+1. Create `src/data/rp_api_client.py` to call RP REST API
+2. Implement `StudentRepository` methods to use API instead of database
+3. Add authentication (API keys, OAuth, or RP SSO)
+4. Cache API responses for performance
+
+### Security Requirements
+
+- Use environment variables for credentials
+- Implement HTTPS for all API calls
+- Add role-based access control
+- Implement audit logging
+- Follow RP data protection policies
+
+## 15. Limitations
+
+- **Demo Data**: Current database uses synthetic data, not real RP students. All records are marked as DEMO/SYNTHETIC.
+- **No Authentication**: Prototype lacks RP SSO integration. Authentication is not implemented in this prototype.
+- **Legacy Model**: The ML model was trained on Portuguese secondary school data (2008). RP institution data is mapped for prototype compatibility via `LEGACY_MODEL_COMPATIBILITY` configuration. Production deployment for Rwanda Polytechnic requires validation and/or retraining using representative RP student data to ensure cultural and educational context alignment.
+- **RP Model Not Available**: An RP-trained model does not yet exist. The architecture is ready for RP model deployment, but prediction quality for real RP students has not been validated.
+- **Feature Mapping**: Current features are based on secondary-school dataset. Higher-education specific features (GPA, credits, semester performance) are not yet implemented.
+- **No Production Database**: Uses SQLite for demo. Production requires official RP database/API integration.
+
 To independently re-verify the saved model's metrics:
 
 ```bash
@@ -235,7 +386,7 @@ cd src
 python evaluate_model.py
 ```
 
-## 11. How to Run the Streamlit App
+## 16. How to Run the Streamlit App
 
 ```bash
 # from the project root (after training the model at least once)
@@ -244,20 +395,37 @@ streamlit run app.py
 
 Then open the local URL Streamlit prints (typically `http://localhost:8501`).
 
-## 11b. Running the Automated Test Suite
+### Application Pages
+
+The upgraded Streamlit application includes 11 professional pages:
+
+1. **🏠 Home** - Project overview, purpose, and disclaimer
+2. **👨‍🎓 Student Portal** - NEW: Predict using Registration Number lookup or Manual Input
+3. **📊 Dashboard** - Professional KPI cards showing total students, pass/fail rates, average performance, and high-risk students, with interactive charts and demographic breakdowns
+4. **🔮 Predict Performance** - Single student prediction with risk level (Low/Medium/High), confidence score, key influencing factors, and intervention recommendations
+5. **⚠️ Early Warning** - Identify at-risk students based on configurable thresholds (absences, failures, study time, grades) with risk scores and intervention suggestions
+6. **👤 Student Profile** - Detailed view of individual student academic information, demographics, support systems, social factors, and prediction with recommendations
+7. **🔬 What-If Analysis** - Explore how changing student factors (study time, grades, support) affects predicted outcomes with before/after comparison
+8. **📋 Batch Prediction** - Upload CSV files to predict multiple students at once with validation, summary statistics, and CSV download
+9. **📈 Model Dashboard** - Comprehensive model metrics (accuracy, precision, recall, F1, ROC-AUC), confusion matrix, baseline comparison, early-warning metrics, and feature importance
+10. **⚖️ Fairness Audit** - Performance analysis across demographic subgroups (sex, address, school) with detailed metrics and interpretation
+11. **⚠️ Responsible Use** - Limitations, bias, privacy, data security, and mitigation strategies
+
+## 17. Running the Automated Test Suite
 
 ```bash
 pip install -r requirements-dev.txt
 pytest tests/ -v
 ```
 
-25 assertions across two files: `tests/test_predict.py` (valid input,
-boundary values, missing/empty/unseen-category error handling, model
-loading) and `tests/test_pipeline.py` (data integrity — no missing values,
+27 assertions across two files: `tests/test_predict.py` (16 tests covering valid input,
+boundary values, missing/empty/unseen-category error handling, model loading,
+risk level calculation, batch prediction, feature importance, and intervention recommendations)
+and `tests/test_pipeline.py` (11 tests covering data integrity — no missing values,
 no duplicates, documented shape; feature-engineering correctness; and,
 importantly, that the metrics reported in this README are **actually
 reproducible** by re-evaluating the saved `model.pkl`, not just numbers
-pasted into a document). All 25 checks pass against the current
+pasted into a document). All 27 checks pass against the current
 `models/model.pkl`.
 
 ## 11c. Fairness Audit
@@ -373,10 +541,40 @@ In short: **this system is a decision-support tool, never a
 decision-maker**, and its predictions must always be combined with a
 teacher's professional judgement.
 
-## 15. Future Improvements
+## 15. New Features in Professional Upgrade
+
+The system has been upgraded to a professional, production-ready Student Performance Analytics System with the following enhancements:
+
+### Enhanced Prediction Capabilities
+- **Risk Level Assessment**: Each prediction now includes a risk level (Low/Medium/High) based on probability thresholds
+- **Feature Importance Explanation**: Displays the top 5 factors influencing each prediction
+- **Intervention Recommendations**: Provides practical, context-aware recommendations based on student data and prediction results
+
+### New Application Pages
+- **Professional Dashboard**: KPI cards, interactive charts, demographic breakdowns
+- **Early Warning System**: Configurable risk thresholds, risk scoring, at-risk student identification
+- **Student Profile**: Comprehensive student view with academic, demographic, and social factors
+- **What-If Analysis**: Interactive exploration of how factor changes affect predictions
+- **Batch Prediction**: CSV upload/download for processing multiple students
+- **Fairness Audit**: Dedicated page displaying subgroup performance metrics
+
+### Engineering Improvements
+- **Batch Prediction API**: `predict_batch()` function for processing multiple records
+- **Modular Code**: Reusable functions for risk calculation, feature importance, and recommendations
+- **Enhanced Testing**: 27 automated tests (up from 25) covering new functionality
+- **Updated Dependencies**: Added plotly for enhanced visualizations
+
+### User Experience
+- **Full-Word Labels**: All interface elements use clear, non-technical language
+- **Responsive Design**: Mobile-friendly layout with CSS breakpoints
+- **Professional UI**: Clean sidebar navigation, consistent layout, helpful tooltips
+- **Error Handling**: User-friendly error messages and input validation
+
+## 16. Future Improvements
 
 - Collect and retrain on current, locally representative student data.
-- Add fairness auditing across demographic subgroups (sex, address type, etc.).
+- Enhance fairness auditing with cross-validation on larger datasets.
 - Try additional algorithms (e.g. XGBoost/LightGBM) and SHAP-based explanations.
 - Add authentication and per-student audit logging for real deployment.
 - Extend to a regression target (predicted numeric grade) alongside PASS/FAIL.
+- Add real-time prediction API endpoints for integration with other systems.

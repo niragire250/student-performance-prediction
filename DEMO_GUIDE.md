@@ -73,12 +73,7 @@ and a terminal ready, alongside the browser tab with the Streamlit app.
 > presented as a certainty, always a probability."
 
 **12. Explain limitations and responsible AI (45s)**
-> Open the "⚠️ Responsible Use" page. "The model is trained on a small,
-> 2008 dataset from two schools, so it needs retraining on local data
-> before real use. I also show that if you remove the interim grades, the
-> model's accuracy drops from 90% to 67% — so I'm transparent that this
-> only works well once some grades already exist. It's a decision-support
-> tool, never a replacement for a teacher's judgement."
+> Open the "⚠️ Responsible Use" page. "The current prototype uses a **legacy model** trained on Portuguese secondary-school data (2008). For this RP prototype, we map RP institutions to the model's expected school field for compatibility via `LEGACY_MODEL_COMPATIBILITY`. Production deployment for Rwanda Polytechnic requires validation and/or retraining using representative RP student data. An RP-trained model does not yet exist. I also show that if you remove the interim grades, the model's accuracy drops from 90% to 67% — so I'm transparent that this only works well once some grades already exist. It's a decision-support tool, never a replacement for a teacher's judgement."
 
 ## Simple explanations to memorise
 

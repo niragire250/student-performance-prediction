@@ -1,9 +1,12 @@
-# Model Card: Student PASS/FAIL Predictor
+# Model Card: Legacy Student PASS/FAIL Predictor
 
 Following the model card format popularised by Mitchell et al. (2019) and
 adopted by Google and Hugging Face — a single, scannable reference for
 what this model does, how it was built, and where it should and shouldn't
 be used.
+
+**IMPORTANT**: This is a **legacy model** trained on Portuguese secondary-school data.
+For Rwanda Polytechnic deployment, an RP-trained model is required.
 
 ## Model Details
 
@@ -93,18 +96,19 @@ feature importance. See README.md §12 for the full comparison.
 
 ## Limitations
 
-1. **Small, dated, geographically narrow training set** — 395 students,
+1. **Legacy Model Context** — This model was trained on Portuguese secondary-school data (2008). It is NOT an RP-trained model. The RP prototype uses a compatibility layer (`LEGACY_MODEL_COMPATIBILITY`) to map RP institutions to the model's expected school field. Production deployment for Rwanda Polytechnic requires validation and/or retraining using representative RP student data.
+2. **Small, dated, geographically narrow training set** — 395 students,
    two Portuguese schools, data collected around 2008. Results may not
    generalise to other regions, curricula, school systems, or eras.
-2. **Accuracy is highly dependent on prior grades (G1/G2)** — the model is
+3. **Accuracy is highly dependent on prior grades (G1/G2)** — the model is
    far less reliable as a true "before any grade exists" predictor (see
    Early-warning trade-off above).
-3. **Small test set (79 students)** — point estimates for accuracy/F1/etc.
+4. **Small test set (79 students)** — point estimates for accuracy/F1/etc.
    carry real sampling uncertainty; subgroup estimates even more so.
-4. **No temporal validation** — the single train/test split does not test
+5. **No temporal validation** — the single train/test split does not test
    whether the model generalises to a *different cohort or year* of
    students, only to held-out students from the same cohort.
-5. **Correlational, not causal** — a PASS/FAIL prediction reflects
+6. **Correlational, not causal** — a PASS/FAIL prediction reflects
    statistical association in historical data, not a causal explanation
    of why a given student might struggle.
 
